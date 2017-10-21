@@ -1,0 +1,29 @@
+*nat
+# let wan DNS be used by all lan clients
+-A POSTROUTING -o wan -j MASQUERADE
+COMMIT
+
+
+*filter
+#### All
+
+# -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+#### loopback
+
+-A INPUT -i lo -j ACCEPT
+
+#### inbound at lan
+
+-A INPUT -i lan -j ACCEPT
+-A FORWARD -i lan -o wan -j ACCEPT
+
+
+# Inbound at wan
+# -A INPUT -p udp -m multiport --dport 22 -j ACCEPT
+-A INPUT -p tcp -m multiport --dport 4000 -j ACCEPT
+
+#-A FORWARD -i wan -o lan -j REJECT
+# -A FORWARD -i wan -o lan -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+COMMIT

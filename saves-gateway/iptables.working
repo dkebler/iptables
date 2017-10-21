@@ -1,0 +1,37 @@
+*nat
+# let wan DNS be used by all lan clients
+#-A POSTROUTING -o wan -j MASQUERADE
+
+# -A PREROUTING  -p tcp -m tcp -i wan --dport  1234 -j DNAT --to-destination 192.168.1.1:22
+
+COMMIT
+
+
+*filter
+#### All
+
+-P INPUT DROP
+# -P FORWARD DROP
+-P OUTPUT DROP
+
+# -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+#### loopback
+
+-A INPUT -i lo -j ACCEPT
+
+#### inbound at lan
+
+-A INPUT -i lan -j ACCEPT
+-A FORWARD -i lan -o wan -j ACCEPT
+
+
+# Inbound at wan
+
+-A INPUT -i wan -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A OUTPUT -o wan -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
+-A INPUT -i wan -p tcp --dport 4000 -m state --state NEW,ESTABLISHED -j ACCEPT
+-A OUTPUT -o wan -p tcp --sport 4000 -m state --state ESTABLISHED -j ACCEPT
+-A FORWARD -i wan -o lan -m state --state NEW,ESTABLISHED -j ACCEPT
+
+COMMIT

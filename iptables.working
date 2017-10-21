@@ -1,0 +1,30 @@
+*nat
+-A POSTROUTING -o wan -j MASQUERADE
+COMMIT
+
+
+*filter
+-P INPUT ACCEPT
+-P OUTPUT ACCEPT
+-P FORWARD DROP
+
+#The next step locks the services so they only work from the LAN:
+-I INPUT 1 -i lan -j ACCEPT
+-I INPUT 1 -i lo -j ACCEPT
+-A INPUT -p UDP --dport bootps ! -i lan -j REJECT
+-A INPUT -p UDP --dport domain ! -i lan -j REJECT
+
+# Allow access to the ssh server from the WAN:
+-A INPUT -p TCP --dport ssh -i wan -j ACCEPT
+-A INPUT -p TCP --dport 4000 -i wan -j ACCEPT
+
+# Drop TCP / UDP packets to privileged ports:
+-A INPUT -p TCP ! -i lan -d 0/0 --dport 0:1023 -j DROP
+-A INPUT -p UDP ! -i lan -d 0/0 --dport 0:1023 -j DROP
+
+# Finally add the rules for NAT:
+-I FORWARD -i lan -d 192.168.1.0/24 -j DROP
+-A FORWARD -i lan -s 192.168.1.0/24 -j ACCEPT
+-A FORWARD -i wan -d 192.168.1.0/24 -j ACCEPT
+
+COMMIT

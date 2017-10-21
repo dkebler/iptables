@@ -1,0 +1,10 @@
+[Unit]
+Description=Iptables Load
+
+[Service]
+Type=oneshot
+ExecStart=/etc/iptables/iptables-load.sh
+ExecReload=/etc/iptables/iptables-load.sh
+
+[Install]
+WantedBy=multi-user.target
